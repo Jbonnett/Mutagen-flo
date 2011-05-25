@@ -37,7 +37,7 @@ from zlib import error as zlibError
 from warnings import warn
 
 import mutagen
-from mutagen._util import insert_bytes, delete_bytes, DictProxy
+from mutagen._util import insert_bytes, delete_bytes, DictProxy,WrappedFileobj
 
 class error(Exception): pass
 class ID3NoHeaderError(error, ValueError): pass
@@ -105,11 +105,10 @@ class ID3(DictProxy, mutagen.Metadata):
             mutagen.id3.ID3(filename, known_frames=my_frames)
         """
 
-        from os.path import getsize
         self.filename = filename
         self.__known_frames = known_frames
-        self.__fileobj = open(filename, 'rb')
-        self.__filesize = getsize(filename)
+        self.__fileobj = WrappedFileobj(filename, 'rb')
+        self.__filesize = self.__fileobj.getsize()
         try:
             try:
                 self.__load_header()
@@ -381,12 +380,12 @@ class ID3(DictProxy, mutagen.Metadata):
         framesize = len(framedata)
 
         if filename is None: filename = self.filename
-        try: f = open(filename, 'rb+')
+        try: f = WrappedFileobj(filename, 'rb+')
         except IOError, err:
             from errno import ENOENT
             if err.errno != ENOENT: raise
-            f = open(filename, 'ab') # create, then reopen
-            f = open(filename, 'rb+')
+            f = WrappedFileobj(filename, 'ab') # create, then reopen
+            f = WrappedFileobj(filename, 'rb+')
         try:
             idata = f.read(10)
             try: id3, vmaj, vrev, flags, insize = unpack('>3sBBB4s', idata)
@@ -544,7 +543,7 @@ def delete(filename, delete_v1=True, delete_v2=True):
     delete_v2 -- delete any ID3v2 tag
     """
 
-    f = open(filename, 'rb+')
+    f = WrappedFileobj(filename, 'rb+')
 
     if delete_v1:
         try:
@@ -2074,7 +2073,7 @@ class ID3FileType(mutagen.FileType):
             except AttributeError: offset = None
         else: offset = None
         try:
-            fileobj = open(filename, "rb")
+            fileobj = WrappedFileobj(filename, "rb")
             self.info = self._Info(fileobj, offset)
         finally:
             fileobj.close()

@@ -14,6 +14,7 @@ intended for internal use in Mutagen only.
 
 import struct
 
+from os import SEEK_END
 from fnmatch import fnmatchcase
 
 class DictMixin(object):
@@ -314,3 +315,62 @@ def dict_match(d, key, default=None):
             if fnmatchcase(key, pattern):
                 return value
     return default
+
+#this probably isnt ideal, but it concentrates the shittyness into a
+#manageable puck of poop
+class WrappedFileobj(object):
+    def __init__(self,filething, mode):
+        """
+        handles wrapping the fileobject as needed or 
+        """
+        if hasattr(filething, 'read'): 
+            self.__file=filething
+            self.pos=0
+            self.opened=False
+
+        else:
+            self.opened=True
+            self.name=filething
+            self.__file=open(filething, mode)
+
+    def __getattr__( self, name ):
+        return getattr( self.__file, name ) 
+
+    def seek(self, *args, **kwargs):
+        """
+        emulated seek
+        """
+        if hasattr(self.__file, 'seek'):
+            self.__file.seek(*args, **kwargs)
+        else:
+            #todo: finish me 
+            self.pos = arg[0]
+            self.max_pos[0]
+            
+    def close(self,*args,**kwargs):
+        """
+        if we were passed a flo we should just flush 
+        it and ignore fileobj, because it is just a copy
+        else we were passed a filename, which we opened, so
+        we should close it
+        """
+        if self.opened:
+            self.__file.close(*args, **kwargs)
+        else:
+            if hasattr(self.__file, 'flush'):
+                self.__file.flush()
+        
+    def getsize(self):
+        """
+        get the size, either by seeeking to the end.
+        """
+        if self.opened:
+            from os.path import getsize
+            return getsize(self.name)
+        else: 
+            startpos=self.tell()
+            self.seek(0)
+            self.seek(0,SEEK_END)
+            size=self.tell()
+            self.seek(startpos)
+            return size

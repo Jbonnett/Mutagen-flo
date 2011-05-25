@@ -32,6 +32,15 @@ class TEasyID3(TestCase):
         self.failIf(os.path.getsize(self.filename))
         self.failIf(self.id3)
 
+    def test_fileobj(self):
+        self.id3["artist"] = "nodus"
+        self.id3.save(self.filename)
+        fileobj=open(self.filename,'rb')
+        byflobj=EasyID3(fileobj)
+        self.failUnlessEqual(byflobj["artist"],[ u"nodus"])
+        fileobj.close()
+
+
     def test_pprint(self):
         self.id3["artist"] = "baz"
         self.id3.pprint()

@@ -236,7 +236,7 @@ class TMP4(TestCase):
         fileobj = open(self.filename)
         header = fileobj.read(128)
         self.failUnless(MP4.score(self.filename, fileobj, header))
-
+        
     def test_channels(self):
         self.failUnlessEqual(self.audio.info.channels, 2)
 
@@ -502,7 +502,14 @@ class TMP4HasTags(TMP4):
             IOError, MP4, os.path.join("tests", "data", "empty.ogg"))
 
 add(TMP4HasTags)
+class TMP4FileObj(TMP4HasTags):
+    def setUp(self):
+        super(TMP4FileObj,self).setUp()
+        fileobj=open(self.filename,'rw+')
+        self.audio = MP4(fileobj)
+         
 
+add(TMP4FileObj)
 class TMP4CovrWithName(TMP4):
     # http://bugs.musicbrainz.org/ticket/5894
     original = os.path.join("tests", "data", "covr-with-name.m4a")
@@ -592,3 +599,4 @@ have_faad = True
 if os.system("faad 2> %s > %s" % (devnull, devnull)) == NOTFOUND:
     have_faad = False
     print "WARNING: Skipping FAAD reference tests."
+

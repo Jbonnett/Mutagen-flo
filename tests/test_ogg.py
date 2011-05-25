@@ -371,6 +371,14 @@ class TOggFileType(TestCase):
         audio = self.Kind(self.filename)
         self.failUnlessEqual(audio["vendor"], ["a vendor"])
 
+    def test_fileobj(self):
+        self.test_set_two_tags()
+        fileobj= open(self.filename,'rb')
+        audio2 = self.Kind(fileobj)
+        self.failUnlessEqual(audio2["foo"], ["a"])
+        self.failUnlessEqual(audio2["bar"], ["b"])
+        fileobj.close()
+
     def test_set_two_tags(self):
         self.audio["foo"] = ["a"]
         self.audio["bar"] = ["b"]
@@ -379,6 +387,12 @@ class TOggFileType(TestCase):
         self.failUnlessEqual(len(audio.tags.keys()), 2)
         self.failUnlessEqual(audio["foo"], ["a"])
         self.failUnlessEqual(audio["bar"], ["b"])
+        self.scan_file()
+
+    def test_save_twice(self):
+        self.audio.save()
+        self.audio.save()
+        self.failUnlessEqual(self.Kind(self.filename).tags, self.audio.tags)
         self.scan_file()
 
     def test_save_twice(self):

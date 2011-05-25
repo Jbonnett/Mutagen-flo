@@ -23,7 +23,7 @@ import zlib
 from cStringIO import StringIO
 
 from mutagen import FileType
-from mutagen._util import cdata, insert_bytes, delete_bytes
+from mutagen._util import cdata, insert_bytes, delete_bytes, WrappedFileobj
 
 class error(IOError):
     """Ogg stream parsing errors."""
@@ -437,7 +437,7 @@ class OggFileType(FileType):
         """Load file information from a filename."""
 
         self.filename = filename
-        fileobj = open(filename, "rb")
+        fileobj = WrappedFileobj(filename, "rb")
         try:
             try:
                 self.info = self._Info(fileobj)
@@ -472,7 +472,7 @@ class OggFileType(FileType):
             filename = self.filename
 
         self.tags.clear()
-        fileobj = open(filename, "rb+")
+        fileobj = WrappedFileobj(filename, "rb+")
         try:
             try: self.tags._inject(fileobj)
             except error, e:
@@ -489,7 +489,7 @@ class OggFileType(FileType):
         """
         if filename is None:
             filename = self.filename
-        fileobj = open(filename, "rb+")
+        fileobj = WrappedFileobj(filename, "rb+")
         try:
             try: self.tags._inject(fileobj)
             except error, e:

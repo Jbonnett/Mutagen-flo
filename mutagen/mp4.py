@@ -25,7 +25,7 @@ import sys
 
 from mutagen import FileType, Metadata
 from mutagen._constants import GENRES
-from mutagen._util import cdata, insert_bytes, delete_bytes, DictProxy, utf8
+from mutagen._util import cdata, insert_bytes, delete_bytes, DictProxy, utf8, WrappedFileobj
 
 class error(IOError): pass
 class MP4MetadataError(error): pass
@@ -282,7 +282,7 @@ class MP4Tags(DictProxy, Metadata):
         data = Atom.render("ilst", "".join(values))
 
         # Find the old atoms.
-        fileobj = open(filename, "rb+")
+        fileobj = WrappedFileobj(filename, "rb+")
         try:
             atoms = Atoms(fileobj)
             try:
@@ -659,7 +659,7 @@ class MP4(FileType):
 
     def load(self, filename):
         self.filename = filename
-        fileobj = open(filename, "rb")
+        fileobj = WrappedFileobj(filename, "rb")
         try:
             atoms = Atoms(fileobj)
             try: self.info = MP4Info(atoms, fileobj)
