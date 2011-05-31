@@ -200,13 +200,13 @@ def File(filename, options=None, easy=False):
     if not options:
         return None
 
-    fileobj = open(filename, "rb")
+    fileobj = mutagen._util.WrappedFileobj(filename, "rb")
     try:
         header = fileobj.read(128)
         # Sort by name after score. Otherwise import order affects
         # Kind sort order, which affects treatment of things with
         # equals scores.
-        results = [(Kind.score(filename, fileobj, header), Kind.__name__)
+        results = [(Kind.score(fileobj.name, fileobj, header), Kind.__name__)
                    for Kind in options]
     finally:
         fileobj.close()
