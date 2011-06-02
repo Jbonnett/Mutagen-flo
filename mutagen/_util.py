@@ -359,7 +359,8 @@ class WrappedFileobj(object):
         else:
             if hasattr(self.__file, 'flush'):
                 self.__file.flush()
-        
+                self.__file.seek(0)
+                
     def getsize(self):
         """
         get the size, either by seeeking to the end.
